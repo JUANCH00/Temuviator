@@ -1,5 +1,8 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 export const MONGO_CONFIG = {
-    URI: 'mongodb://mongo1:27017,mongo2:27017,mongo3:27017/?replicaSet=myReplicaSet',
+    URI: process.env.MONGO_URI,
     OPTIONS: {
         readPreference: 'primaryPreferred',
         w: 'majority',
