@@ -1,0 +1,43 @@
+.cashouts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.cashout-item {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.cashout-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.cashout-item.me {
+  background: rgba(52, 152, 219, 0.2);
+  border: 1px solid #3498db;
+}
+
+.cashout-player {
+  font-weight: 500;
+  font-size: 0.9em;
+  flex: 1;
+}
+
+.cashout-multiplier {
+  color: #3498db;
+  font-weight: bold;
+  margin: 0 10px;
+}
+
+.cashout-profit {
+  color: #2ecc71;
+  font-weight: bold;
+}
