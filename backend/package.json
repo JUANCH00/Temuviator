@@ -1,0 +1,36 @@
+{
+  "name": "aviator-game-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Backend distribuido para juego tipo Aviator con alta disponibilidad",
+  "main": "server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "start:node1": "node src/server.js 3001",
+    "start:node2": "node src/server.js 3002",
+    "start:node3": "node src/server.js 3003",
+    "dev": "nodemon src/server.js"
+  },
+  "keywords": [
+    "websocket",
+    "redis",
+    "mongodb",
+    "distributed",
+    "high-availability"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^4.18.2",
+    "ioredis": "^5.3.2",
+    "mongodb": "^6.3.0",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
