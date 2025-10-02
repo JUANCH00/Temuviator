@@ -15,11 +15,11 @@ let gameState = {
 
 async function startGameLoop() {
     if (!config.IS_MASTER) {
-        console.log('ℹ️  Este nodo NO es el maestro, no ejecutará el ciclo del juego');
+        console.log('ℹEste nodo NO es el maestro, no ejecutará el ciclo del juego');
         return;
     }
 
-    console.log('🎮 Nodo MAESTRO - Iniciando ciclo del juego...');
+    console.log('Nodo MAESTRO - Iniciando ciclo del juego...');
 
     while (true) {
         await handleWaitingPhase();
@@ -46,7 +46,7 @@ async function handleWaitingPhase() {
         waitTime: 5
     }));
 
-    console.log(`\n🆕 Nueva ronda: ${roundId} - Esperando apuestas...`);
+    console.log(`\nNueva ronda: ${roundId} - Esperando apuestas...`);
     await sleep(config.WAIT_TIME);
 }
 
@@ -63,7 +63,7 @@ async function handleFlyingPhase() {
         crashPoint
     }));
 
-    console.log(`🚀 Ronda ${gameState.roundId} iniciada - Crash point: ${crashPoint.toFixed(2)}x`);
+    console.log(`Ronda ${gameState.roundId} iniciada - Crash point: ${crashPoint.toFixed(2)}x`);
 
     let multiplier = 1.00;
     const incrementSpeed = 0.01;
@@ -91,7 +91,7 @@ async function handleCrashPhase() {
         crashPoint: gameState.crashPoint
     }));
 
-    console.log(`💥 Ronda ${gameState.roundId} crasheó en ${gameState.crashPoint.toFixed(2)}x`);
+    console.log(`Ronda ${gameState.roundId} crasheó en ${gameState.crashPoint.toFixed(2)}x`);
     await processLostBets(gameState.roundId);
     await Round.complete(gameState.roundId, gameState.crashPoint);
 }
@@ -106,9 +106,9 @@ function updateGameState(newState) {
 
 subscriber.subscribe(config.GAME_CHANNEL, (err) => {
     if (err) {
-        console.error('❌ Error suscribiéndose a Redis:', err);
+        console.error('Error suscribiéndose a Redis:', err);
     } else {
-        console.log(`📡 Nodo ${config.PORT} suscrito al canal '${config.GAME_CHANNEL}'`);
+        console.log(`Nodo ${config.PORT} suscrito al canal '${config.GAME_CHANNEL}'`);
     }
 });
 

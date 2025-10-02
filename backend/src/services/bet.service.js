@@ -6,29 +6,24 @@ import { BETS_KEY, GAME_STATUS } from '../config/constants.js';
 
 class BetService {
     async placeBet(clientId, betAmount) {
-        // Validación de estado del juego
         if (gameState.getStatus() !== GAME_STATUS.WAITING) {
             throw new Error('La ronda ya comenzó');
         }
 
-        // Validación de monto
         if (!betAmount || betAmount <= 0) {
             throw new Error('Monto inválido');
         }
 
-        // Verificar balance
         const user = await userService.getUser(clientId);
         if (!user || user.balance < betAmount) {
             throw new Error('Balance insuficiente');
         }
 
-        // Verificar si ya apostó
         const alreadyBet = await redisClient.hexists(BETS_KEY, clientId);
         if (alreadyBet) {
             throw new Error('Ya apostaste en esta ronda');
         }
 
-        // Guardar apuesta en Redis
         await redisClient.hset(BETS_KEY, clientId, JSON.stringify({
             betAmount,
             cashedOut: false,
@@ -36,10 +31,8 @@ class BetService {
             profit: 0
         }));
 
-        // Descontar balance
         await userService.updateBalance(clientId, -betAmount);
 
-        // Guardar en MongoDB
         const db = mongoDB.getDB();
         await db.collection('bets').insertOne({
             roundId: gameState.getRoundId(),
@@ -51,7 +44,6 @@ class BetService {
             profit: 0
         });
 
-        // Publicar evento
         await redisClient.publish({
             type: 'bet-placed',
             clientId,
@@ -68,12 +60,10 @@ class BetService {
     }
 
     async cashout(clientId) {
-        // Validación de estado
         if (gameState.getStatus() !== GAME_STATUS.FLYING) {
             throw new Error('No hay ronda activa');
         }
 
-        // Verificar apuesta activa
         const betDataStr = await redisClient.hget(BETS_KEY, clientId);
         if (!betDataStr) {
             throw new Error('No tienes apuesta activa');
@@ -85,21 +75,17 @@ class BetService {
             throw new Error('Ya hiciste cashout');
         }
 
-        // Calcular ganancia
         const currentMultiplier = gameState.getMultiplier();
         const profit = bet.betAmount * currentMultiplier;
         const netProfit = profit - bet.betAmount;
 
-        // Actualizar Redis
         bet.cashedOut = true;
         bet.cashoutMultiplier = currentMultiplier;
         bet.profit = netProfit;
         await redisClient.hset(BETS_KEY, clientId, JSON.stringify(bet));
 
-        // Actualizar balance
         await userService.updateBalance(clientId, profit);
 
-        // Actualizar MongoDB
         const db = mongoDB.getDB();
         await db.collection('bets').updateOne(
             { roundId: gameState.getRoundId(), clientId },
@@ -113,7 +99,6 @@ class BetService {
             }
         );
 
-        // Guardar transacción
         await db.collection('transactions').insertOne({
             clientId,
             type: 'cashout',
@@ -123,7 +108,6 @@ class BetService {
             timestamp: new Date()
         });
 
-        // Publicar evento
         await redisClient.publish({
             type: 'player-cashed-out',
             clientId,
@@ -131,7 +115,7 @@ class BetService {
             profit: netProfit
         });
 
-        console.log(`✅ ${clientId} hizo cashout en ${currentMultiplier.toFixed(2)}x - Ganancia: $${netProfit.toFixed(2)}`);
+        console.log(`${clientId} hizo cashout en ${currentMultiplier.toFixed(2)}x - Ganancia: $${netProfit.toFixed(2)}`);
 
         return {
             success: true,

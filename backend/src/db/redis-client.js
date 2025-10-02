@@ -12,7 +12,7 @@ class RedisClient {
     connect() {
         this.client = new Redis(REDIS_CONFIG);
         this.subscriber = new Redis(REDIS_CONFIG);
-        console.log('✅ Conectado a Redis');
+        console.log('Conectado a Redis');
     }
 
     async subscribe(handler) {
@@ -20,9 +20,9 @@ class RedisClient {
 
         await this.subscriber.subscribe(GAME_CHANNEL, (err) => {
             if (err) {
-                console.error('❌ Error suscribiéndose a Redis:', err);
+                console.error('Error suscribiéndose a Redis:', err);
             } else {
-                console.log(`📡 Suscrito al canal '${GAME_CHANNEL}'`);
+                console.log(`Suscrito al canal '${GAME_CHANNEL}'`);
             }
         });
 
@@ -59,7 +59,7 @@ class RedisClient {
     disconnect() {
         if (this.client) this.client.disconnect();
         if (this.subscriber) this.subscriber.disconnect();
-        console.log('🔴 Redis desconectado');
+        console.log('Redis desconectado');
     }
 }
 

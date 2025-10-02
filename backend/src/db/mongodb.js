@@ -13,10 +13,10 @@ class MongoDB {
             this.client = new MongoClient(MONGO_CONFIG.URI, MONGO_CONFIG.OPTIONS);
             await this.client.connect();
             this.db = this.client.db(DB_NAME);
-            console.log(`✅ Conectado a MongoDB Cluster`);
+            console.log(`Conectado a MongoDB Cluster`);
             await this.initializeCollections();
         } catch (error) {
-            console.error('❌ Error conectando a MongoDB:', error);
+            console.error('Error conectando a MongoDB:', error);
             throw error;
         }
     }
