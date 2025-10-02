@@ -8,7 +8,7 @@ async function setupWebSocketConnection(ws, req) {
     const clientId = params.get('clientId');
 
     if (!clientId) {
-        console.log("❌ Conexión rechazada: no se proporcionó clientId");
+        console.log("Conexión rechazada: no se proporcionó clientId");
         ws.close();
         return;
     }
@@ -16,7 +16,7 @@ async function setupWebSocketConnection(ws, req) {
     ws.clientId = clientId;
     ws.isAlive = true;
 
-    console.log(`👤 Cliente ${clientId} conectado al puerto ${config.PORT}`);
+    console.log(`Cliente ${clientId} conectado al puerto ${config.PORT}`);
 
     try {
         const user = await handleUserConnection(ws, clientId);
@@ -68,7 +68,7 @@ function setupConnectionHandlers(ws) {
     });
 
     ws.on('close', () => {
-        console.log(`👋 Cliente ${ws.clientId} desconectado del puerto ${config.PORT}`);
+        console.log(`Cliente ${ws.clientId} desconectado del puerto ${config.PORT}`);
     });
 
     ws.on('error', (error) => {

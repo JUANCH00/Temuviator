@@ -1,11 +1,9 @@
-// Game status constants
 export const GAME_STATUS = {
   WAITING: 'waiting',
   FLYING: 'flying',
   CRASHED: 'crashed'
 };
 
-// WebSocket message types
 export const WS_MESSAGE_TYPES = {
   WELCOME: 'welcome',
   NEW_ROUND_WAITING: 'new-round-waiting',
@@ -19,11 +17,12 @@ export const WS_MESSAGE_TYPES = {
   ERROR: 'error'
 };
 
-// Quick bet amounts
 export const QUICK_BET_AMOUNTS = [50, 100, 200];
 
-// WebSocket configuration
 export const WS_CONFIG = {
+  //Localhost
   URL: 'ws://localhost:8080',
+  //Conexion
+  // URL: 'ws://172.20.10.3:8080',
   RECONNECT_DELAY: 3000
 };

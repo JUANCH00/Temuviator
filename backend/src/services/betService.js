@@ -9,7 +9,6 @@ async function handlePlaceBet(ws, { betAmount }) {
     const { clientId } = ws;
     const gameState = getGameState();
 
-    // Validaciones
     if (gameState.status !== 'waiting') {
         ws.send(JSON.stringify({
             type: 'bet-rejected',
@@ -61,7 +60,7 @@ async function handlePlaceBet(ws, { betAmount }) {
         newBalance: user.balance - betAmount
     }));
 
-    console.log(`💰 ${clientId} apostó $${betAmount} en ronda ${gameState.roundId}`);
+    console.log(`${clientId} apostó $${betAmount} en ronda ${gameState.roundId}`);
 }
 
 async function handleCashout(ws) {
@@ -114,7 +113,7 @@ async function handleCashout(ws) {
         profit: netProfit
     }));
 
-    console.log(`✅ ${clientId} hizo cashout en ${currentMultiplier.toFixed(2)}x - Ganancia: $${netProfit.toFixed(2)}`);
+    console.log(`${clientId} hizo cashout en ${currentMultiplier.toFixed(2)}x - Ganancia: $${netProfit.toFixed(2)}`);
 }
 
 async function processLostBets(roundId) {

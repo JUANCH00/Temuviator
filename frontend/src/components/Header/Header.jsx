@@ -6,7 +6,7 @@ const Header = ({ connected, serverPort, clientId, balance }) => {
   return (
     <header className="header">
       <div className="header-left">
-        <h1>🛩️ Aviator Game</h1>
+        <h1>🛩️ Temuviator Game</h1>
         <div className="connection-status">
           {connected ? (
             <span className="status-online">

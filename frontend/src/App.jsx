@@ -21,16 +21,20 @@ function App() {
     activeBettors,
     recentCashouts,
     crashHistory,
+    isLoadingHistory,
+    isLoadingCashouts,
     setBalance,
     setCurrentBet,
     updateGameState,
     resetRound,
+    loadCrashHistory,
+    loadRecentCashouts,
     addToCrashHistory,
     addActiveBettor,
-    addRecentCashout
+    addRecentCashout,
+    clearRoundData
   } = useGameState();
 
-  // Initialize persistent clientId
   useEffect(() => {
     let id = localStorage.getItem('aviator_clientId');
     if (!id) {
@@ -40,7 +44,6 @@ function App() {
     setClientId(id);
   }, []);
 
-  // Handle WebSocket messages
   const handleWebSocketMessage = useCallback((data) => {
     switch (data.type) {
       case 'connection-closed':
@@ -55,6 +58,20 @@ function App() {
         if (data.gameState) {
           updateGameState(data.gameState);
         }
+        if (data.crashHistory) {
+          loadCrashHistory(data.crashHistory);
+        }
+        if (data.recentCashouts) {
+          loadRecentCashouts(data.recentCashouts);
+        }
+        break;
+
+      case 'crash-history-update':
+        loadCrashHistory(data.crashHistory);
+        break;
+
+      case 'recent-cashouts-update':
+        loadRecentCashouts(data.recentCashouts);
         break;
 
       case WS_MESSAGE_TYPES.NEW_ROUND_WAITING:
@@ -64,7 +81,7 @@ function App() {
           roundId: data.roundId
         });
         setCurrentBet(null);
-        // Reset lists for new round
+        clearRoundData();
         break;
 
       case WS_MESSAGE_TYPES.ROUND_STARTED:
@@ -127,7 +144,19 @@ function App() {
       default:
         console.log('Mensaje desconocido:', data);
     }
-  }, [clientId, currentBet, setBalance, setCurrentBet, updateGameState, addToCrashHistory, addActiveBettor, addRecentCashout]);
+  }, [
+    clientId,
+    currentBet,
+    setBalance,
+    setCurrentBet,
+    updateGameState,
+    loadCrashHistory,
+    loadRecentCashouts,
+    addToCrashHistory,
+    addActiveBettor,
+    addRecentCashout,
+    clearRoundData
+  ]);
 
   const { sendMessage } = useWebSocket(clientId, handleWebSocketMessage);
 
@@ -168,7 +197,7 @@ function App() {
         clientId={clientId}
         balance={balance}
       />
-      
+
       <div className="main-content">
         <GameArea
           gameState={gameState}
@@ -180,12 +209,14 @@ function App() {
           onPlaceBet={handlePlaceBet}
           onCashOut={handleCashOut}
         />
-        
+
         <Sidebar
           crashHistory={crashHistory}
           activeBettors={activeBettors}
           recentCashouts={recentCashouts}
           clientId={clientId}
+          isLoadingHistory={isLoadingHistory}
+          isLoadingCashouts={isLoadingCashouts}
         />
       </div>
     </div>

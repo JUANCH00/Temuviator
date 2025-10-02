@@ -14,6 +14,8 @@ export const useGameState = () => {
   const [activeBettors, setActiveBettors] = useState([]);
   const [recentCashouts, setRecentCashouts] = useState([]);
   const [crashHistory, setCrashHistory] = useState([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+  const [isLoadingCashouts, setIsLoadingCashouts] = useState(true);
 
   const updateGameState = useCallback((updates) => {
     setGameState(prev => ({ ...prev, ...updates }));
@@ -23,11 +25,35 @@ export const useGameState = () => {
     setGameState(initialGameState);
     setCurrentBet(null);
     setActiveBettors([]);
-    setRecentCashouts([]);
+  }, []);
+
+  const loadCrashHistory = useCallback((history) => {
+    if (history && Array.isArray(history) && history.length > 0) {
+      setCrashHistory(history);
+      console.log(`✅ Historial cargado desde WebSocket: ${history.length} crashes`);
+    } else {
+      console.log('ℹ️ No hay historial de crashes disponible');
+    }
+    setIsLoadingHistory(false);
+  }, []);
+
+  const loadRecentCashouts = useCallback((cashouts) => {
+    if (cashouts && Array.isArray(cashouts) && cashouts.length > 0) {
+      setRecentCashouts(cashouts);
+      console.log(`✅ Cashouts cargados desde WebSocket: ${cashouts.length} retiros`);
+    } else {
+      console.log('ℹ️ No hay cashouts recientes disponibles');
+    }
+    setIsLoadingCashouts(false);
   }, []);
 
   const addToCrashHistory = useCallback((crashPoint) => {
-    setCrashHistory(prev => [crashPoint, ...prev].slice(0, 10));
+    setCrashHistory(prev => {
+      if (prev[0] === crashPoint) {
+        return prev;
+      }
+      return [crashPoint, ...prev].slice(0, 10);
+    });
   }, []);
 
   const addActiveBettor = useCallback((bettor) => {
@@ -40,7 +66,23 @@ export const useGameState = () => {
   }, []);
 
   const addRecentCashout = useCallback((cashout) => {
-    setRecentCashouts(prev => [cashout, ...prev].slice(0, 5));
+    setRecentCashouts(prev => {
+      const isDuplicate = prev.some(
+        c => c.clientId === cashout.clientId &&
+          c.multiplier === cashout.multiplier &&
+          Math.abs(c.profit - cashout.profit) < 0.01
+      );
+
+      if (isDuplicate) {
+        return prev;
+      }
+
+      return [cashout, ...prev].slice(0, 10);
+    });
+  }, []);
+
+  const clearRoundData = useCallback(() => {
+    setActiveBettors([]);
   }, []);
 
   return {
@@ -50,12 +92,17 @@ export const useGameState = () => {
     activeBettors,
     recentCashouts,
     crashHistory,
+    isLoadingHistory,
+    isLoadingCashouts,
     setBalance,
     setCurrentBet,
     updateGameState,
     resetRound,
+    loadCrashHistory,
+    loadRecentCashouts,
     addToCrashHistory,
     addActiveBettor,
-    addRecentCashout
+    addRecentCashout,
+    clearRoundData
   };
 };

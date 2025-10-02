@@ -13,12 +13,12 @@ class GameService {
 
     async startGameLoop() {
         if (this.isRunning) {
-            console.log('⚠️  El ciclo del juego ya está en ejecución');
+            console.log('El ciclo del juego ya está en ejecución');
             return;
         }
 
         this.isRunning = true;
-        console.log('🎮 Iniciando ciclo del juego...');
+        console.log('Iniciando ciclo del juego...');
 
         while (this.isRunning) {
             await this.runRound();
@@ -26,16 +26,9 @@ class GameService {
     }
 
     async runRound() {
-        // Fase 1: ESPERA
         await this.waitingPhase();
-
-        // Fase 2: VUELO
         await this.flyingPhase();
-
-        // Fase 3: CRASH
         await this.crashPhase();
-
-        // Esperar antes de siguiente ronda
         await sleep(GAME_CONFIG.POST_CRASH_WAIT);
     }
 
@@ -51,7 +44,7 @@ class GameService {
             waitTime: GAME_CONFIG.WAIT_TIME / 1000
         });
 
-        console.log(`\n🆕 Nueva ronda: ${roundId} - Esperando apuestas...`);
+        console.log(`\nNueva ronda: ${roundId} - Esperando apuestas...`);
         await sleep(GAME_CONFIG.WAIT_TIME);
     }
 
@@ -65,7 +58,6 @@ class GameService {
             startTime: Date.now()
         });
 
-        // Guardar ronda en MongoDB
         const db = mongoDB.getDB();
         await db.collection('rounds').insertOne({
             roundId,
@@ -80,9 +72,8 @@ class GameService {
             crashPoint
         });
 
-        console.log(`🚀 Ronda ${roundId} iniciada - Crash point: ${crashPoint.toFixed(2)}x`);
+        console.log(`Ronda ${roundId} iniciada - Crash point: ${crashPoint.toFixed(2)}x`);
 
-        // Incrementar multiplicador
         let multiplier = 1.00;
 
         while (multiplier < crashPoint) {
@@ -113,12 +104,10 @@ class GameService {
             crashPoint
         });
 
-        console.log(`💥 Ronda ${roundId} crasheó en ${crashPoint.toFixed(2)}x`);
+        console.log(`Ronda ${roundId} crasheó en ${crashPoint.toFixed(2)}x`);
 
-        // Procesar apuestas perdidas
         await betService.processLostBets(roundId);
 
-        // Actualizar ronda
         const db = mongoDB.getDB();
         await db.collection('rounds').updateOne(
             { roundId },
@@ -134,7 +123,7 @@ class GameService {
 
     stopGameLoop() {
         this.isRunning = false;
-        console.log('🛑 Deteniendo ciclo del juego...');
+        console.log('Deteniendo ciclo del juego...');
     }
 }
 
