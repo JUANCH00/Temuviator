@@ -399,8 +399,8 @@ Buscar la IP local (ejemplo: `192.168.1.100`)
 ### Prueba 6: Failover MongoDB
 
 ```bash
-# Detener nodo primario
-docker stop mongo1
+# Detener nodo backend
+docker stop mongo3
 
 # Verificar que el sistema siga funcionando
 # Un nodo secundario se promoverá automáticamente
