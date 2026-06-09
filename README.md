@@ -1,82 +1,83 @@
-# 🛩️ Aviator Game - Documentación de Despliegue
+# 🛩️ Aviator Game — Deployment Documentation
 
-## 📋 Tabla de Contenidos
+## 📋 Table of Contents
 
-- [Descripción General](#descripción-general)
-- [Arquitectura del Sistema](#arquitectura-del-sistema)
-- [Requisitos Previos](#requisitos-previos)
-- [Configuración del Entorno](#configuración-del-entorno)
-- [Despliegue Paso a Paso](#despliegue-paso-a-paso)
-- [Pruebas en Entorno LAN](#pruebas-en-entorno-lan)
-- [Solución de Problemas](#solución-de-problemas)
-- [Monitoreo y Mantenimiento](#monitoreo-y-mantenimiento)
-
----
-
-## 🎮 Descripción General
-
-Aviator Game es una aplicación multiplayer en tiempo real que simula un juego de apuestas estilo "crash game". El sistema está diseñado con alta disponibilidad utilizando:
-
-- **MongoDB Replica Set** (3 nodos) para persistencia de datos
-- **Redis** para pub/sub y estado en tiempo real
-- **Backend Node.js** escalable con múltiples instancias
-- **Frontend React** con WebSocket para comunicación en tiempo real
----
-
-## 📦 Requisitos Previos
-
-### Software Necesario
-
-- **Docker Desktop** (v20.10+) con Docker Compose
-- **Node.js** (v18+) y npm (v9+)
-- **Git** para clonar el repositorio
-- **Editor de texto** (VS Code recomendado)
-
-### Requisitos del Sistema
-
-- **RAM**: Mínimo 8GB (16GB recomendado)
-- **CPU**: 4 núcleos (8 recomendado)
-- **Disco**: 10GB de espacio libre
-- **Red**: Conexión LAN estable
+- [Overview](#overview)
+- [System Architecture](#system-architecture)
+- [Prerequisites](#prerequisites)
+- [Environment Setup](#environment-setup)
+- [Step-by-Step Deployment](#step-by-step-deployment)
+- [LAN Environment Testing](#lan-environment-testing)
+- [Troubleshooting](#troubleshooting)
+- [Monitoring and Maintenance](#monitoring-and-maintenance)
 
 ---
 
-## ⚙️ Configuración del Entorno
+## 🎮 Overview
 
-### 1. Clonar el Repositorio
+Aviator Game is a real-time multiplayer application that simulates a crash-style betting game. The system is designed for high availability using:
+
+- **MongoDB Replica Set** (3 nodes) for data persistence
+- **Redis** for pub/sub and real-time state management
+- **Scalable Node.js backend** with multiple instances
+- **React frontend** with WebSocket for real-time communication
+
+---
+
+## 📦 Prerequisites
+
+### Required Software
+
+- **Docker Desktop** (v20.10+) with Docker Compose
+- **Node.js** (v18+) and npm (v9+)
+- **Git** to clone the repository
+- **Text editor** (VS Code recommended)
+
+### System Requirements
+
+- **RAM**: 8 GB minimum (16 GB recommended)
+- **CPU**: 4 cores (8 recommended)
+- **Disk**: 10 GB free space
+- **Network**: Stable LAN connection
+
+---
+
+## ⚙️ Environment Setup
+
+### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/tu-usuario/aviator-game.git
+git clone https://github.com/your-username/aviator-game.git
 cd aviator-game
 ```
 
-### 2. Configurar MongoDB Replica Set
+### 2. Configure MongoDB Replica Set
 
-#### 2.1 Crear Directorios de Persistencia
+#### 2.1 Create Persistence Directories
 
-**En Windows:**
+**Windows:**
 ```bash
 mkdir C:\mongo\replica1
 mkdir C:\mongo\replica2
 mkdir C:\mongo\replica3
 ```
 
-**En Linux/Mac:**
+**Linux/Mac:**
 ```bash
 mkdir -p ~/mongo/replica1
 mkdir -p ~/mongo/replica2
 mkdir -p ~/mongo/replica3
 ```
 
-#### 2.2 Crear Red Docker
+#### 2.2 Create Docker Network
 
 ```bash
 docker network create mongoCluster
 ```
 
-#### 2.3 Iniciar Contenedores MongoDB
+#### 2.3 Start MongoDB Containers
 
-**En Windows:**
+**Windows:**
 ```bash
 docker run -d -p 27017:27017 --name mongo1 --network mongoCluster ^
   -v C:\mongo\replica1:/data/db ^
@@ -91,7 +92,7 @@ docker run -d -p 27019:27017 --name mongo3 --network mongoCluster ^
   mongo:latest mongod --replSet myReplicaSet --bind_ip localhost,mongo3
 ```
 
-**En Linux/Mac:**
+**Linux/Mac:**
 ```bash
 docker run -d -p 27017:27017 --name mongo1 --network mongoCluster \
   -v ~/mongo/replica1:/data/db \
@@ -106,13 +107,13 @@ docker run -d -p 27019:27017 --name mongo3 --network mongoCluster \
   mongo:latest mongod --replSet myReplicaSet --bind_ip localhost,mongo3
 ```
 
-#### 2.4 Inicializar Replica Set
+#### 2.4 Initialize Replica Set
 
 ```bash
 docker exec -it mongo1 mongosh
 ```
 
-Dentro del shell de MongoDB:
+Inside the MongoDB shell:
 ```javascript
 rs.initiate({
   _id: "myReplicaSet",
@@ -124,19 +125,19 @@ rs.initiate({
 })
 ```
 
-Esperar unos segundos y verificar:
+Wait a few seconds, then verify:
 ```javascript
 rs.status()
 ```
 
-Salir del shell:
+Exit the shell:
 ```javascript
 exit
 ```
 
-#### 2.5 Configurar Hosts (Windows)
+#### 2.5 Configure Hosts (Windows)
 
-Editar `C:\Windows\System32\drivers\etc\hosts` como **Administrador**:
+Edit `C:\Windows\System32\drivers\etc\hosts` as **Administrator**:
 
 ```
 127.0.0.1   mongo1
@@ -144,38 +145,38 @@ Editar `C:\Windows\System32\drivers\etc\hosts` como **Administrador**:
 127.0.0.1   mongo3
 ```
 
-**En Linux/Mac** editar `/etc/hosts`:
+**Linux/Mac** — edit `/etc/hosts`:
 ```bash
 sudo nano /etc/hosts
 ```
 
-Agregar las mismas líneas.
+Add the same lines.
 
-### 3. Configurar Redis
+### 3. Configure Redis
 
 ```bash
 docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
 ```
 
-### 4. Verificar Contenedores
+### 4. Verify Containers
 
 ```bash
 docker ps
 ```
 
-Deberías ver 4 contenedores corriendo:
+You should see 4 running containers:
 - mongo1, mongo2, mongo3
 - redis-stack-server
 
 ---
 
-## 🚀 Despliegue Paso a Paso
+## 🚀 Step-by-Step Deployment
 
 ### Backend
 
-#### 1. Configurar Variables de Entorno
+#### 1. Configure Environment Variables
 
-Crear archivo `backend/.env`:
+Create `backend/.env`:
 
 ```env
 # MongoDB Configuration
@@ -185,84 +186,84 @@ MONGO_URI=mongodb://mongo1:27017,mongo2:27018,mongo3:27019/aviator_game?replicaS
 REDIS_HOST=localhost
 REDIS_PORT=6379
 
-# Game Configuration (en milisegundos)
+# Game Configuration (in milliseconds)
 WAIT_TIME=5000
 TICK_INTERVAL=100
 POST_CRASH_WAIT=3000
 ```
 
-#### 2. Instalar Dependencias
+#### 2. Install Dependencies
 
 ```bash
 cd backend
 npm install
 ```
 
-#### 3. Iniciar Servidores Backend
+#### 3. Start Backend Servers
 
-**Terminal 1 - Servidor Maestro (Puerto 3001):**
+**Terminal 1 — Primary Server (Port 3001):**
 ```bash
 npm start 3001
 ```
 
-**Terminal 2 - Servidor Esclavo (Puerto 3002):**
+**Terminal 2 — Secondary Server (Port 3002):**
 ```bash
 npm start 3002
 ```
 
-Deberías ver:
+Expected output:
 ```
-✅ Conectado a MongoDB Cluster
-✅ Conectado a Redis
-🚀 Servidor Aviator escuchando en puerto 3001
-📊 Rol: MAESTRO (gestiona rondas)
+✅ Connected to MongoDB Cluster
+✅ Connected to Redis
+🚀 Aviator server listening on port 3001
+📊 Role: PRIMARY (manages rounds)
 ```
 
 ### Frontend
 
-#### 1. Configurar WebSocket
+#### 1. Configure WebSocket
 
-Editar `frontend/src/utils/constants.js`:
+Edit `frontend/src/utils/constants.js`:
 
 ```javascript
 export const WS_CONFIG = {
-  URL: 'ws://192.168.1.100:8080', // Cambia por tu IP LAN
+  URL: 'ws://192.168.1.100:8080', // Replace with your LAN IP
   RECONNECT_DELAY: 3000
 };
 ```
 
-#### 2. Instalar Dependencias
+#### 2. Install Dependencies
 
 ```bash
 cd frontend
 npm install
 ```
 
-#### 3. Modo Desarrollo
+#### 3. Development Mode
 
 ```bash
 npm run dev
 ```
 
-La aplicación estará disponible en `http://localhost:5173`
+The application will be available at `http://localhost:5173`
 
-#### 4. Build para Producción
+#### 4. Production Build
 
 ```bash
 npm run build
 ```
 
-Los archivos compilados estarán en `frontend/build`
+Compiled files will be in `frontend/build`
 
 ---
 
-## 🌐 Pruebas en Entorno LAN
+## 🌐 LAN Environment Testing
 
-### Configuración del Load Balancer (Nginx)
+### Load Balancer Configuration (Nginx)
 
-#### 1. Instalar Nginx
+#### 1. Install Nginx
 
-**Windows:** Descargar de [nginx.org](http://nginx.org/en/download.html)
+**Windows:** Download from [nginx.org](http://nginx.org/en/download.html)
 
 **Linux:**
 ```bash
@@ -274,9 +275,9 @@ sudo apt-get install nginx
 brew install nginx
 ```
 
-#### 2. Configurar nginx.conf
+#### 2. Configure nginx.conf
 
-Crear/editar el archivo de configuración:
+Create or edit the configuration file:
 
 ```nginx
 worker_processes 1;
@@ -319,7 +320,7 @@ http {
 }
 ```
 
-#### 3. Iniciar Nginx
+#### 3. Start Nginx
 
 **Windows:**
 ```bash
@@ -336,7 +337,7 @@ sudo nginx
 nginx
 ```
 
-### Obtener IP LAN
+### Get LAN IP
 
 **Windows:**
 ```bash
@@ -348,96 +349,97 @@ ipconfig
 ifconfig
 ```
 
-Buscar la IP local (ejemplo: `192.168.1.100`)
+Look for your local IP (e.g. `192.168.1.100`)
 
-### Acceder desde Otros Dispositivos
+### Access from Other Devices
 
-1. En la misma red LAN, abrir navegador
-2. Navegar a: `http://192.168.1.100:5173`
-3. Cada cliente recibirá un `clientId` único
-4. Los clientes se sincronizan en tiempo real
+1. On the same LAN, open a browser
+2. Navigate to: `http://192.168.1.100:5173`
+3. Each client receives a unique `clientId`
+4. Clients synchronize in real time
 
 ---
 
-## 🧪 Guía de Pruebas
+## 🧪 Testing Guide
 
-### Prueba 1: Conexión Básica
+### Test 1: Basic Connection
 
-1. Abrir la aplicación en el navegador
-2. Verificar que aparezca "🟢 Conectado"
-3. Verificar balance inicial de $1000
+1. Open the application in the browser
+2. Verify that "🟢 Connected" appears
+3. Verify initial balance of $1,000
 
-### Prueba 2: Colocar Apuesta
+### Test 2: Place a Bet
 
-1. Esperar fase "Esperando siguiente ronda..."
-2. Ingresar monto (ej: $100)
-3. Click en "Apostar"
-4. Verificar que el balance disminuya
+1. Wait for the "Waiting for next round..." phase
+2. Enter an amount (e.g. $100)
+3. Click "Bet"
+4. Verify that the balance decreases
 
-### Prueba 3: Cashout Exitoso
+### Test 3: Successful Cashout
 
-1. Colocar apuesta en fase de espera
-2. Esperar que inicie el vuelo
-3. Click en "Retirar" cuando el multiplicador sea > 1.5x
-4. Verificar ganancia en balance
+1. Place a bet during the waiting phase
+2. Wait for the flight to begin
+3. Click "Cash Out" when the multiplier is > 1.5x
+4. Verify the winnings in the balance
 
-### Prueba 4: Prueba de Crash
+### Test 4: Crash Test
 
-1. Colocar apuesta
-2. NO hacer cashout
-3. Esperar a que el avión crashee
-4. Verificar pérdida de apuesta
+1. Place a bet
+2. Do NOT cash out
+3. Wait for the plane to crash
+4. Verify that the bet is lost
 
-### Prueba 5: Múltiples Clientes
+### Test 5: Multiple Clients
 
-1. Abrir 3 navegadores diferentes
-2. Colocar apuestas en cada uno
-3. Verificar que aparezcan en "Apostadores Activos"
-4. Hacer cashout en diferentes momentos
-5. Verificar que aparezcan en "Retiros Recientes"
+1. Open 3 different browsers
+2. Place bets in each one
+3. Verify they appear under "Active Bettors"
+4. Cash out at different moments
+5. Verify they appear under "Recent Cashouts"
 
-### Prueba 6: Failover MongoDB
+### Test 6: MongoDB Failover
 
 ```bash
-# Detener nodo backend
+# Stop a backend node
 docker stop mongo3
 
-# Verificar que el sistema siga funcionando
-# Un nodo secundario se promoverá automáticamente
+# Verify the system keeps running
+# A secondary node will be promoted automatically
 ```
 
-### Prueba 7: Escalabilidad Backend
+### Test 7: Backend Scalability
 
 ```bash
-# Iniciar servidor adicional
+# Start an additional server
 npm start 3003
 
-# Actualizar nginx.conf para incluirlo
-# Verificar balanceo de carga
+# Update nginx.conf to include it
+# Verify load balancing
 ```
 
 ---
 
-## 📊 Monitoreo y Mantenimiento
+## 📊 Monitoring and Maintenance
 
-### Verificar Estado del Sistema
+### Check System Status
 
 ```bash
-# Estado de MongoDB Replica Set
+# MongoDB Replica Set status
 docker exec -it mongo1 mongosh --eval "rs.status()"
 
-# Logs de Backend
+# Backend logs
 tail -f backend/logs/app.log
 
-# Estado de contenedores
+# Container status
 docker stats
 ```
----
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver archivo `LICENSE` para más detalles.
 
 ---
 
-**Desarrollado con ❤️ para aprender sobre sistemas distribuidos en tiempo real**
+## 📄 License
+
+This project is licensed under the MIT License. See the `LICENSE` file for details.
+
+---
+
+**Built with ❤️ to learn about real-time distributed systems**
